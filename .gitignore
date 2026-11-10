@@ -34,3 +34,6 @@ familycare-web/dist/
 
 # OS
 .DS_Store
+
+# Track configuration template only
+!familycare-web/.env.example
