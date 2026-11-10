@@ -1,0 +1,36 @@
+# Dữ liệu nhạy cảm: KHÔNG commit
+*.mp4
+*.mov
+*.avi
+*.mkv
+*.jpg
+*.jpeg
+data/
+datasets/
+.env
+.env.*
+*.keystore
+*.jks
+google-services.json
+service-account*.json
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+.ruff_cache/
+
+# Android
+android-node/.gradle/
+android-node/build/
+android-node/app/build/
+android-node/local.properties
+.idea/
+
+# Node / web
+node_modules/
+familycare-web/dist/
+
+# OS
+.DS_Store

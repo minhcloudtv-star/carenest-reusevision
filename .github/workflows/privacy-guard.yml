@@ -1,0 +1,15 @@
+name: Privacy Guard
+on: [pull_request]
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Chặn file video/ảnh
+        run: |
+          if git diff --name-only origin/${{ github.base_ref }}...HEAD | grep -Ei '\.(mp4|mov|avi|mkv|jpg|jpeg)$'; then
+            echo "Không commit video/ảnh. Dùng kho dữ liệu riêng."
+            exit 1
+          fi

@@ -1,0 +1,9 @@
+fastapi
+uvicorn[standard]
+websockets
+numpy
+opencv-python-headless
+mediapipe
+httpx
+pytest
+ruff
