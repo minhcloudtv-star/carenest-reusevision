@@ -5,19 +5,36 @@
 *.mkv
 *.jpg
 *.jpeg
+*.png
+*.gif
+*.webp
 data/
 datasets/
+input_videos/
+outputs/
 .env
 .env.*
 *.keystore
 *.jks
+*.key
+*.pem
+*secret*
+*credentials*
 google-services.json
 service-account*.json
 
+# Model Weights & Assets
+*.pt
+*.tflite
+*.task
+*.onnx
+
 # Python
 __pycache__/
-*.pyc
+*.py[cod]
+*$py.class
 .venv/
+venv/
 .pytest_cache/
 .ruff_cache/
 
@@ -32,5 +49,14 @@ android-node/local.properties
 node_modules/
 familycare-web/dist/
 
-# OS
+# OS & Sandbox Home Dotfiles
 .DS_Store
+.bash_logout
+.bashrc
+.profile
+.gitconfig
+.cache/
+.config/
+.gemini
+.gemini/
+.local/
