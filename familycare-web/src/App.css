@@ -1,0 +1,57 @@
+main { max-width: 960px; margin: 0 auto; padding: 24px; }
+.status-banner { display: flex; align-items: center; gap: 16px; padding: 20px 24px; border-radius: 12px; color: #fff; font-size: 1.3rem; }
+.monitoring { background: #146534; }
+.unavailable { background: #a51d25; }
+header { padding: 32px 0; }
+.brand { font-weight: 800; color: #155869; font-size: 1.2rem; }
+h1 { font-size: 2rem; }
+h2 { font-size: 1.4rem; }
+h3 { font-size: 1.15rem; line-height: 1.4; }
+.date-note { margin: 8px 0 20px; }
+.events { list-style: none; margin: 0; padding: 0; display: grid; gap: 16px; }
+.event-button { display: flex; align-items: center; gap: 20px; width: 100%; text-align: left; background: #fff; border: 2px solid #b8c5ce; border-radius: 12px; padding: 24px; }
+.event-icon { font-size: 2rem; color: #164e63; width: 48px; flex-shrink: 0; text-align: center; }
+.event-content { flex: 1; }
+time { display: block; margin-top: 6px; }
+.badge { background: #fff0bd; color: #593900; border: 1px solid #8a6500; padding: 6px 14px; border-radius: 8px; font-weight: 700; white-space: nowrap; }
+@media (max-width: 600px) {
+  main { padding: 16px; }
+  .status-banner { padding: 16px; font-size: 1.1rem; }
+  .event-button { flex-wrap: wrap; padding: 18px; gap: 12px; }
+  .badge { margin-left: 60px; }
+  .event-content { flex-basis: calc(100% - 60px); }
+}
+
+button { font: inherit; cursor: pointer; min-height: 52px; border: 2px solid #155869; border-radius: 8px; padding: 12px 20px; color: #172b3a; background: #fff; }
+button:focus-visible { outline: 4px solid #075985; outline-offset: 4px; }
+.event-button:hover { border-color: #155869; background: #f0f8fa; }
+.processed { background: #e7eef4; border-color: #40576b; color: #233d53; }
+.event-detail { background: #fff; padding: 24px; border: 2px solid #b8c5ce; border-radius: 12px; }
+.event-detail h2 { margin-top: 24px; }
+dt { font-weight: 700; margin-top: 18px; }
+dd { margin-left: 0; overflow-wrap: anywhere; }
+.confirm-button { color: #fff; background: #155869; font-weight: 700; }
+button:disabled { cursor: default; background: #e7eef4; color: #40576b; border-color: #40576b; }
+.local-note { margin-top: 20px; }
+
+main { padding-bottom: calc(130px + env(safe-area-inset-bottom)); }
+.bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 960px; display: flex; gap: 8px; padding: 10px 12px calc(10px + env(safe-area-inset-bottom)); background: #fff; border-top: 2px solid #7b8e9d; }
+.bottom-nav button { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 8px 4px; border-color: transparent; font-weight: 700; }
+.bottom-nav button[aria-current="page"] { background: #155869; color: #fff; }
+.bottom-nav button span { font-size: 1.4rem; line-height: 1.2; }
+.filters { display: flex; flex-wrap: wrap; gap: 20px; margin-top: 24px; }
+.filters label { flex: 1; min-width: 220px; font-weight: 700; }
+select { display: block; width: 100%; font: inherit; min-height: 56px; margin-top: 8px; padding: 8px; border: 2px solid #40576b; border-radius: 8px; background: #fff; color: #172b3a; }
+select:focus-visible { outline: 4px solid #075985; outline-offset: 3px; }
+
+.alert-settings { display: grid; gap: 16px; margin: 24px 0; }
+
+.settings-panel { background: #fff; padding: 24px; border: 2px solid #b8c5ce; border-radius: 12px; margin-bottom: 24px; }
+.settings-panel section { margin-top: 28px; }
+.settings-panel form { display: grid; gap: 16px; margin-top: 20px; }
+.settings-panel label { display: grid; gap: 8px; font-weight: 700; }
+.settings-panel input { width: 100%; min-height: 56px; padding: 12px; border: 2px solid #40576b; border-radius: 8px; font: inherit; color: #172b3a; background: #fff; }
+.settings-panel input:focus-visible { outline: 4px solid #075985; outline-offset: 3px; }
+.recipient-list { list-style: none; padding: 0; }
+.recipient-list li { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 16px 0; border-bottom: 1px solid #b8c5ce; }
+.recipient-list div { min-width: 0; overflow-wrap: anywhere; }

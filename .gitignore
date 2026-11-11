@@ -60,3 +60,6 @@ familycare-web/dist/
 .gemini
 .gemini/
 .local/
+
+# Track configuration template only
+!familycare-web/.env.example
