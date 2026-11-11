@@ -4,6 +4,9 @@ websockets
 numpy
 opencv-python-headless
 mediapipe
+ultralytics
+pydantic
+requests
 httpx
 pytest
 ruff
