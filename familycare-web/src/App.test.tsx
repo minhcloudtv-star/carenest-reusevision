@@ -74,3 +74,32 @@ it('lịch sử sắp xếp mới nhất trước, lọc kết hợp và giữ x
   expect(screen.getByText('Đã xử lý')).toBeTruthy()
   expect(screen.getByRole('status').textContent).toContain('Monitoring unavailable')
 })
+
+it('mở Care Circle và chi tiết đúng thành viên từ cấu hình đã lưu', () => {
+  localStorage.setItem('familycare.settings.v1', JSON.stringify({ hubUrl: '', primaryRecipientId: 'lan', recipients: [
+    { id: 'lan', name: 'Lan', contact: '0901234567' },
+  ] }))
+  render(<App />)
+  fireEvent.click(screen.getByRole('button', { name: 'Thành viên' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Xem chi tiết Lan — Người nhận chính' }))
+  const detail = screen.getByRole('region', { name: 'Chi tiết người chăm sóc' })
+  expect(within(detail).getByText('0901234567')).toBeTruthy()
+  fireEvent.click(within(detail).getByRole('button', { name: 'Đóng chi tiết' }))
+  expect(screen.queryByRole('region', { name: 'Chi tiết người chăm sóc' })).toBeNull()
+  localStorage.clear()
+})
+
+it('rời trang Thành viên rồi xóa người đã chọn không tự mở chi tiết người khác', () => {
+  localStorage.setItem('familycare.settings.v1', JSON.stringify({ hubUrl: '', recipients: [
+    { id: 'lan', name: 'Lan', contact: '0901234567' },
+    { id: 'binh', name: 'Bình', contact: '0901234568' },
+  ] }))
+  render(<App />)
+  fireEvent.click(screen.getByRole('button', { name: 'Thành viên' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Xem chi tiết Lan — Người chăm sóc' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Cài đặt' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Xóa Lan' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Thành viên' }))
+  expect(screen.queryByRole('region', { name: 'Chi tiết người chăm sóc' })).toBeNull()
+  localStorage.clear()
+})

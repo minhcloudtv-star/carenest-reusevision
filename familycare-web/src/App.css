@@ -65,3 +65,16 @@ a:focus-visible { outline: 4px solid #075985; outline-offset: 4px; }
 
 .install-primer { display: grid; gap: 16px; }
 .install-actions { display: flex; flex-wrap: wrap; gap: 16px; }
+
+/* Shared theme and overview layout. */
+main { padding-bottom: calc(var(--height-navigation) + var(--space-lg) + env(safe-area-inset-bottom)); }
+main.has-emergency { padding-bottom: calc(var(--height-navigation) + var(--height-emergency) + var(--space-lg) + env(safe-area-inset-bottom)); }
+.overview-status { margin-bottom: var(--space-xl); }
+.member-details { display: grid; gap: var(--space-lg); margin-top: var(--space-lg); }
+.bottom-nav { height: calc(var(--height-navigation) + env(safe-area-inset-bottom)); }
+.bottom-nav button { font-size: var(--font-size-small); }
+.event-detail, .settings-panel, .bottom-nav, button, select, .settings-panel input { background: var(--color-surface); color: var(--color-text); border-color: var(--color-border); }
+.brand, .event-icon, .recovery-panel a, .settings-panel > a { color: var(--color-primary); }
+.confirm-button, .bottom-nav button[aria-current="page"] { background: var(--color-avatar-background); color: var(--color-avatar-foreground); }
+.monitoring { background: var(--color-status-ok); }
+.unavailable { background: var(--color-status-unavailable); }

@@ -109,3 +109,21 @@ Hợp đồng API dự kiến, cần backend triển khai/xác nhận:
 Mọi endpoint dùng `VITE_API_URL`. `OtpInput` là component controlled dùng chung,
 không gắn với API hay mục đích OTP; có thể dùng lại khi triển khai xóa tài khoản
 và thêm người nhận cảnh báo. Hai thao tác này chưa được nối OTP trong thay đổi này.
+
+## Giao diện giám sát
+
+Tổng quan dùng StatusRing, dải chỉ số thiết bị và 5 mốc timeline mới nhất.
+Lịch sử dùng cùng EventTimeline, giữ bộ lọc và thao tác mở chi tiết/ack.
+Màu trạng thái có token sáng/tối, có test tương phản chữ 4.5:1 và vòng tròn
+so với nền 3:1. Chưa có telemetry pin/tín hiệu nên hiển thị chưa có dữ liệu.
+
+Cài đặt cho chọn người nhận chính trong các liên hệ có số điện thoại hợp lệ.
+Trang Thành viên đọc cùng cấu hình và mở chi tiết từ Care Circle; chưa có vai
+trò từ server, nhãn người nhận chính/người chăm sóc chỉ là chức năng liên hệ.
+
+Hiện schema chưa có nguồn đánh giá nguy hiểm từ AI. Hàm tổng hợp hỗ trợ tập
+ID đã được AI đánh giá nhưng App chưa có nguồn để cấp tập này; không tự suy
+luận nguy cấp từ loại sự kiện hoặc confidence. Vì vậy nút gọi khẩn cấp chưa
+kích hoạt với dữ liệu thật hiện có. Cần nối hợp đồng đánh giá AI đã thống nhất
+để hoàn thành luồng này, không thêm trường ngầm vào CareEvent. Mất mạng hoặc
+heartbeat quá hạn luôn ưu tiên Monitoring unavailable.

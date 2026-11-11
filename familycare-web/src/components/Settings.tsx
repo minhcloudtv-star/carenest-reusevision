@@ -2,26 +2,12 @@ import { useState } from 'react'
 import { TelegramSettings } from './TelegramSettings'
 import type { CareEvent } from '../types/event'
 
-export const SETTINGS_KEY = 'familycare.settings.v1'
-interface Recipient { id: string; name: string; contact: string }
-interface SettingsData { recipients: Recipient[]; hubUrl: string }
+import { SETTINGS_KEY, loadSettings, phoneNumber } from '../settings'
+import type { SettingsData } from '../settings'
+export { SETTINGS_KEY } from '../settings'
 
-function load(): { data: SettingsData; error: string } {
-  try {
-    const raw = localStorage.getItem(SETTINGS_KEY)
-    if (!raw) return { data: { recipients: [], hubUrl: '' }, error: '' }
-    const data = JSON.parse(raw) as SettingsData
-    if (!data || typeof data.hubUrl !== 'string' || !Array.isArray(data.recipients)
-      || !data.recipients.every(item => item && typeof item.id === 'string'
-        && typeof item.name === 'string' && typeof item.contact === 'string')) throw new Error()
-    return { data, error: '' }
-  } catch {
-    return { data: { recipients: [], hubUrl: '' }, error: 'Không thể đọc cài đặt đã lưu. Vui lòng kiểm tra lại cấu hình.' }
-  }
-}
-
-export function Settings({ events }: { events: CareEvent[] }) {
-  const [initial] = useState(load)
+export function Settings({ events, onChange }: { events: CareEvent[]; onChange?: (data: SettingsData) => void }) {
+  const [initial] = useState(loadSettings)
   const [settings, setSettings] = useState(initial.data)
   const [hubUrl, setHubUrl] = useState(initial.data.hubUrl)
   const [name, setName] = useState('')
@@ -34,6 +20,7 @@ export function Settings({ events }: { events: CareEvent[] }) {
     try {
       localStorage.setItem(SETTINGS_KEY, JSON.stringify(next))
       setSettings(next)
+      onChange?.(next)
       setError('')
       setMessage('Đã lưu cài đặt trên thiết bị này.')
       return true
@@ -75,6 +62,16 @@ export function Settings({ events }: { events: CareEvent[] }) {
         <label>Số điện thoại hoặc email<input value={contact} onChange={event => setContact(event.target.value)} required maxLength={200} /></label>
         <button type="submit">Thêm người nhận</button>
       </form>
+    </section>
+    <section aria-labelledby="primary-title">
+      <h3 id="primary-title">Liên hệ khẩn cấp</h3>
+      <label>Người nhận chính
+        <select value={settings.primaryRecipientId ?? ''} onChange={event => save({ ...settings, primaryRecipientId: event.target.value })}>
+          <option value="">Chưa chọn</option>
+          {settings.recipients.filter(item => phoneNumber(item.contact)).map(item => <option key={item.id} value={item.id}>{item.name}</option>)}
+        </select>
+      </label>
+      <p>Chỉ người nhận có số điện thoại hợp lệ mới có thể được chọn. Thao tác gọi luôn do bạn chủ động bấm.</p>
     </section>
     <TelegramSettings />
     <section aria-labelledby="cameras-title">

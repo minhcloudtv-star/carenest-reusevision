@@ -49,3 +49,19 @@ it('không lưu địa chỉ sai giao thức hoặc thông tin liên hệ trùng
   expect(JSON.parse(localStorage.getItem(SETTINGS_KEY)!).recipients).toHaveLength(1)
   expect(screen.getByRole('alert').textContent).toContain('đã có trong danh sách')
 })
+
+it('lưu người nhận chính do người dùng chọn, không chọn email để gọi', () => {
+  localStorage.setItem(SETTINGS_KEY, JSON.stringify({ hubUrl: '', recipients: [
+    { id: 'lan', name: 'Lan', contact: '0901234567' },
+    { id: 'email', name: 'Email', contact: 'care@example.test' },
+  ] }))
+  const onChange = vi.fn()
+  const { unmount } = render(<Settings events={[]} onChange={onChange} />)
+  expect(screen.queryByRole('option', { name: 'Email' })).toBeNull()
+  fireEvent.change(screen.getByLabelText('Người nhận chính'), { target: { value: 'lan' } })
+  expect(JSON.parse(localStorage.getItem(SETTINGS_KEY)!).primaryRecipientId).toBe('lan')
+  expect(onChange).toHaveBeenCalled()
+  unmount()
+  render(<Settings events={[]} />)
+  expect((screen.getByLabelText('Người nhận chính') as HTMLSelectElement).value).toBe('lan')
+})
