@@ -94,3 +94,85 @@ it('chế độ mock không gọi fetch', () => {
   expect(screen.getAllByRole('listitem')).toHaveLength(5)
   expect(fetchMock).not.toHaveBeenCalled()
 })
+
+it.each([
+  [[], 'ok'],
+  [events, 'needs_attention'],
+  [events.map(event => ({ ...event, acknowledged_by: 'Lan' })), 'ok'],
+] as const)('Overview truyền trạng thái tổng hợp cho StatusRing', async (snapshot, expected) => {
+  fetchMock.mockImplementation((url: string) => Promise.resolve(response(url.endsWith('/status') ? healthy() : snapshot)))
+  render(<App />)
+  await waitFor(() => expect(screen.getByRole('status').getAttribute('data-status')).toBe(expected))
+  expect(screen.queryByRole('link', { name: /^Gọi / })).toBeNull()
+})
+
+it('đánh giá AI nguy hiểm làm hiện nút gọi; xác nhận thành công thì ẩn', async () => {
+  localStorage.setItem('familycare.settings.v1', JSON.stringify({ hubUrl: '', primaryRecipientId: 'lan', recipients: [
+    { id: 'lan', name: 'Lan', contact: '0901234567' },
+  ] }))
+  fetchMock.mockImplementation((url: string, options: RequestInit) => Promise.resolve(response(
+    url.endsWith('/status') ? healthy() : options.method === 'POST'
+      ? { ...events[7], acknowledged_by: 'Lan' } : events,
+  )))
+  render(<App dangerousEventIds={new Set([events[7].event_id])} />)
+  await waitFor(() => expect(screen.getByRole('status').getAttribute('data-status')).toBe('critical'))
+  expect(screen.getByRole('link', { name: 'Gọi Lan' }).getAttribute('href')).toBe('tel:0901234567')
+  fireEvent.click(within(screen.getAllByRole('listitem')[0]).getByRole('button'))
+  fireEvent.click(screen.getByRole('button', { name: 'Xác nhận đã xử lý' }))
+  await waitFor(() => expect(screen.queryByRole('link', { name: 'Gọi Lan' })).toBeNull())
+  localStorage.clear()
+})
+
+it('nguy cấp nhưng thiếu người nhận chính không tạo liên kết gọi giả', async () => {
+  localStorage.clear()
+  fetchMock.mockImplementation((url: string) => Promise.resolve(response(url.endsWith('/status') ? healthy() : events)))
+  render(<App dangerousEventIds={new Set([events[7].event_id])} />)
+  await waitFor(() => expect(screen.getByRole('status').getAttribute('data-status')).toBe('critical'))
+  expect(screen.queryByRole('link', { name: /^Gọi / })).toBeNull()
+  expect(screen.getByRole('alert').textContent).toContain('Chọn người nhận chính')
+})
+
+it('mất giám sát ưu tiên offline nhưng vẫn giữ nút gọi cho nguy cấp ngoài 5 mốc mới nhất', async () => {
+  localStorage.setItem('familycare.settings.v1', JSON.stringify({ hubUrl: '', primaryRecipientId: 'lan', recipients: [
+    { id: 'lan', name: 'Lan', contact: '0901234567' },
+  ] }))
+  fetchMock.mockImplementation((url: string) => Promise.resolve(response(url.endsWith('/status')
+    ? { ...healthy(), last_heartbeat_at: '2020-01-01T00:00:00Z' } : events)))
+  render(<App dangerousEventIds={new Set([events[0].event_id])} />)
+  await waitFor(() => expect(screen.getAllByRole('listitem')).toHaveLength(5))
+  expect(screen.getByRole('status').getAttribute('data-status')).toBe('offline')
+  expect(screen.queryByText('Nguy cấp')).toBeNull()
+  expect(screen.getByRole('link', { name: 'Gọi Lan' }).getAttribute('href')).toBe('tel:0901234567')
+  localStorage.clear()
+})
+
+it('xác nhận nguy cấp thất bại giữ nút gọi và trạng thái chưa xử lý', async () => {
+  localStorage.setItem('familycare.settings.v1', JSON.stringify({ hubUrl: '', primaryRecipientId: 'lan', recipients: [
+    { id: 'lan', name: 'Lan', contact: '0901234567' },
+  ] }))
+  fetchMock.mockImplementation((url: string, options: RequestInit) => options.method === 'POST'
+    ? Promise.reject(new Error('offline'))
+    : Promise.resolve(response(url.endsWith('/status') ? healthy() : events)))
+  render(<App dangerousEventIds={new Set([events[7].event_id])} />)
+  await waitFor(() => expect(screen.getByRole('status').getAttribute('data-status')).toBe('critical'))
+  fireEvent.click(within(screen.getAllByRole('listitem')[0]).getByRole('button'))
+  fireEvent.click(screen.getByRole('button', { name: 'Xác nhận đã xử lý' }))
+  await screen.findByRole('alert')
+  expect(screen.getByText('Chưa xử lý')).toBeTruthy()
+  expect(screen.getByRole('status').textContent).toContain('Monitoring unavailable')
+  expect(screen.getByRole('link', { name: 'Gọi Lan' })).toBeTruthy()
+  localStorage.clear()
+})
+
+it.each([
+  { hubUrl: '', primaryRecipientId: 'deleted', recipients: [] },
+  { hubUrl: '', primaryRecipientId: 'email', recipients: [{ id: 'email', name: 'Lan', contact: 'care@example.test' }] },
+])('người nhận chính đã xóa hoặc không có số điện thoại không tạo liên kết tel', async settings => {
+  localStorage.setItem('familycare.settings.v1', JSON.stringify(settings))
+  fetchMock.mockImplementation((url: string) => Promise.resolve(response(url.endsWith('/status') ? healthy() : events)))
+  render(<App dangerousEventIds={new Set([events[7].event_id])} />)
+  await waitFor(() => expect(screen.getByRole('status').getAttribute('data-status')).toBe('critical'))
+  expect(screen.queryByRole('link', { name: /^Gọi / })).toBeNull()
+  expect(screen.getByRole('alert').textContent).toContain('Chọn người nhận chính')
+  localStorage.clear()
+})

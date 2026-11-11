@@ -1,0 +1,8 @@
+.event-timeline { list-style: none; padding: 0; margin: var(--space-lg) 0; }
+.event-timeline__item { position: relative; padding-inline-start: var(--space-xl); padding-bottom: var(--space-lg); }
+.event-timeline__item::before { content: ''; position: absolute; inset-inline-start: 0; top: var(--space-md); width: var(--size-dot); height: var(--size-dot); border-radius: 50%; background: var(--timeline-color); }
+.event-timeline__item:not(:last-child)::after { content: ''; position: absolute; inset-inline-start: calc(var(--size-dot) / 2 - var(--width-avatar-border) / 2); top: calc(var(--space-md) + var(--size-dot)); bottom: calc(-1 * var(--space-md)); width: var(--width-avatar-border); background: var(--color-border); }
+.event-timeline .event-timeline__button { display: grid; justify-items: start; gap: var(--space-sm); padding: var(--space-sm) 0; border: 0; border-radius: 0; background: transparent; color: var(--color-text); width: 100%; text-align: start; }
+.event-timeline time { margin: 0; font-size: var(--font-size-small); }
+.event-timeline .badge { margin: 0; white-space: normal; }
+.empty-state { padding-block: var(--space-lg); }

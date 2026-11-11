@@ -1,0 +1,56 @@
+:root {
+  color-scheme: light;
+  --color-text: #172b3a;
+  --color-background: #f2f5f7;
+  --color-surface: #fff;
+  --color-primary: #155869;
+  --color-border: #b8c5ce;
+  --color-focus: #075985;
+  --color-status-ok: #146534;
+  --color-status-review: #795500;
+  --color-status-critical: #a51d25;
+  --color-status-unavailable: #67333d;
+  --color-on-status: #fff;
+  --color-avatar-background: var(--color-primary);
+  --color-avatar-foreground: var(--color-surface);
+  --color-emergency-background: var(--color-status-critical);
+  --color-emergency-foreground: var(--color-on-status);
+  --font-size-body: 1rem;
+  --font-size-small: 0.9rem;
+  --font-size-avatar: 1.2rem;
+  --font-size-heading: 1.4rem;
+  --font-size-title: 2rem;
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-action-bar: 12px;
+  --space-avatar-overlap: 4px;
+  --space-focus-offset: 4px;
+  --size-avatar: 52px;
+  --size-ring: 200px;
+  --size-dot: 16px;
+  --width-avatar-border: 2px;
+  --width-focus: 4px;
+  --radius-action: 8px;
+  --radius-panel: 12px;
+  --width-content: 960px;
+  --height-navigation: 96px;
+  --height-emergency: 112px;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --color-text: #f2f5f7;
+    --color-background: #111c25;
+    --color-surface: #1c2c38;
+    --color-primary: #a4dde8;
+    --color-border: #738d9d;
+    --color-focus: #a4dde8;
+    --color-status-ok: #23864d;
+    --color-status-review: #906800;
+    --color-status-critical: #c13b45;
+    --color-status-unavailable: #aa5869;
+  }
+}

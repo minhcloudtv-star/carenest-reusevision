@@ -37,6 +37,19 @@ ruff check cloud
 - Giao diện tiếng Việt, chữ lớn, tương phản cao, nút bấm đủ lớn cho người dùng lớn tuổi.
 - Không cài thêm thư viện lớn khi chưa hỏi người dùng.
 
+## Phong cách giao diện familycare-web
+
+Tham khảo cấu trúc (không sao chép màu/logo) từ ứng dụng chăm sóc y tế dạng AloeCare Health:
+
+- Màn hình Tổng quan có một biểu tượng/vòng tròn trạng thái LỚN, chiếm vị trí trung tâm, đổi màu theo 4 mức: ok, cần xem, nguy cấp, mất giám sát.
+- Dải chỉ số ngắn ngay dưới vòng tròn trạng thái (dạng icon + số liệu, xếp ngang).
+- Lịch sử trình bày dạng dòng thời gian dọc (timeline) có chấm và đường nối, không phải bảng hay danh sách thẻ phẳng.
+- Nhiều người chăm sóc hiển thị dạng hàng avatar tròn xếp cạnh nhau (Care Circle), không phải danh sách tên khô khan.
+- Có nút hành động khẩn cấp lớn, cố định ở đáy màn hình, chỉ hiện khi cần.
+- Tổng thể: ít chi tiết, nhiều khoảng trắng, ưu tiên người dùng lớn tuổi hoặc đang hoảng hốt.
+
+Mọi màu, cỡ chữ, khoảng cách PHẢI lấy từ `src/styles/tokens.css` hiện có trong `familycare-web`, không tạo giá trị mới trừ khi được yêu cầu rõ ở bước tiếp theo.
+
 ## Hạ tầng familycare-web
 
 - Xác thực: email + mật khẩu, OTP cho thao tác nhạy cảm. Không dùng SSO Google/Facebook.

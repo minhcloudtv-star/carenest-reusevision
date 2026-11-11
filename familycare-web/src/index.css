@@ -1,9 +1,10 @@
+@import './styles/tokens.css';
 :root {
   font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
   font-size: 20px;
   line-height: 1.6;
-  color: #172b3a;
-  background: #f2f5f7;
+  color: var(--color-text);
+  background: var(--color-background);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
 }

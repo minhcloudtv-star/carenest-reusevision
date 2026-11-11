@@ -1,4 +1,4 @@
-import { act, cleanup, render, screen } from '@testing-library/react'
+import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 import App from '../App'
 import { events } from '../mock/events'
@@ -95,4 +95,20 @@ it('unmount dọn timer, không tự nối lại', async () => {
   expect(socket.close).toHaveBeenCalled()
   await act(async () => { await vi.advanceTimersByTimeAsync(60000) })
   expect(FakeSocket.instances).toHaveLength(1)
+})
+
+it('poll sau ack không khôi phục bản WebSocket cũ chưa xác nhận', async () => {
+  const socket = await start()
+  const incoming = { ...events[0], event_id: '00000000-0000-4000-8000-000000000099', ts: '2099-01-01T00:00:00Z' }
+  act(() => socket.sendEvent(incoming))
+  vi.mocked(fetch).mockImplementation((url, options) => Promise.resolve(new Response(JSON.stringify(
+    String(url).endsWith('/status') ? { connected: true, last_heartbeat_at: new Date().toISOString(), heartbeat_timeout_seconds: 60 }
+      : options?.method === 'POST' ? { ...incoming, acknowledged_by: 'Lan' }
+        : [...events, { ...incoming, acknowledged_by: 'Lan' }],
+  ))))
+  fireEvent.click(within(screen.getAllByRole('listitem')[0]).getByRole('button'))
+  await act(async () => { fireEvent.click(screen.getByRole('button', { name: 'Xác nhận đã xử lý' })); await vi.advanceTimersByTimeAsync(0) })
+  expect(screen.getByText('Đã xử lý')).toBeTruthy()
+  await act(async () => { await vi.advanceTimersByTimeAsync(10000) })
+  expect(screen.getByText('Đã xử lý')).toBeTruthy()
 })

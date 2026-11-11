@@ -1,0 +1,33 @@
+.device-status-bar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  margin: 0;
+  gap: var(--space-md);
+  font: inherit;
+  font-size: var(--font-size-small);
+  color: inherit;
+}
+
+.device-status-bar__item {
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+.device-status-bar__item dt,
+.device-status-bar__item dd {
+  margin: 0;
+  font: inherit;
+}
+
+.device-status-bar__icon {
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
+}
+
+.device-status-bar__icon svg {
+  width: 1em;
+  height: 1em;
+}

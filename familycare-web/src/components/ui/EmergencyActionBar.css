@@ -1,0 +1,34 @@
+.emergency-action-bar {
+  position: fixed;
+  inset-inline: 0;
+  bottom: calc(var(--height-navigation) + env(safe-area-inset-bottom, 0px));
+  z-index: 1;
+  max-width: var(--width-content);
+  margin-inline: auto;
+  padding: var(--space-action-bar);
+  max-height: var(--height-emergency);
+  overflow-y: auto;
+  background: var(--color-surface);
+}
+
+.emergency-action-bar__call {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--size-avatar);
+  padding: var(--space-action-bar);
+  border-radius: var(--radius-action);
+  background: var(--color-emergency-background);
+  color: var(--color-emergency-foreground);
+  font: inherit;
+  font-size: var(--font-size-avatar);
+  font-weight: bold;
+  text-decoration: none;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.emergency-action-bar__call:focus-visible {
+  outline: var(--width-focus) solid var(--color-focus);
+  outline-offset: var(--space-focus-offset);
+}

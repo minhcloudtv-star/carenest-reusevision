@@ -1,5 +1,12 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Settings } from './components/Settings'
+import { loadSettings, phoneNumber } from './settings'
+import { StatusRing } from './components/ui/StatusRing'
+import { DeviceStatusBar } from './components/ui/DeviceStatusBar'
+import { EventTimeline } from './components/ui/EventTimeline'
+import { CareCircle } from './components/ui/CareCircle'
+import { EmergencyActionBar } from './components/ui/EmergencyActionBar'
+import { overviewStatus } from './eventPresentation'
 import { StatusBanner } from './components/StatusBanner'
 import { events } from './mock/events'
 import { acknowledgeEvent, getEvents, getStatus, isHeartbeatFresh } from './api/client'
@@ -19,18 +26,20 @@ const labels: Record<EventType, { icon: string; name: string }> = {
   MONITORING_UNAVAILABLE: { icon: '⚠', name: 'Giám sát không khả dụng' },
 }
 
-const timeFormat = new Intl.DateTimeFormat('vi-VN', {
-  hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Ho_Chi_Minh',
-})
-
-type Page = 'overview' | 'history' | 'settings'
+type Page = 'overview' | 'history' | 'members' | 'settings'
 const pages: { id: Page; label: string; icon: string }[] = [
   { id: 'overview', label: 'Tổng quan', icon: '⌂' },
   { id: 'history', label: 'Lịch sử', icon: '◷' },
+  { id: 'members', label: 'Thành viên', icon: '◉' },
   { id: 'settings', label: 'Cài đặt', icon: '⚙' },
 ]
 
-function MonitoringApp() {
+interface AppProps { dangerousEventIds?: ReadonlySet<string> }
+const noDangerousEvents: ReadonlySet<string> = new Set()
+
+function MonitoringApp({ dangerousEventIds = noDangerousEvents }: AppProps) {
+  const [careSettings, setCareSettings] = useState(() => loadSettings().data)
+  const [memberIndex, setMemberIndex] = useState<number | null>(null)
   const [alerts] = useState(createAlerts)
   const [soundMessage, setSoundMessage] = useState('Âm thanh chưa bật')
   const [notificationMessage, setNotificationMessage] = useState('Thông báo chưa bật')
@@ -53,6 +62,7 @@ function MonitoringApp() {
   const [typeFilter, setTypeFilter] = useState<EventType | ''>('')
   const [statusFilter, setStatusFilter] = useState('all')
   const [appEvents, setAppEvents] = useState<CareEvent[]>(() => useMock ? events.map(event => ({ ...event })) : [])
+  const liveEvents = useRef(new Map<string, CareEvent>())
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [acknowledgedTimes, setAcknowledgedTimes] = useState<Record<string, string>>({})
   const selected = appEvents.find(event => event.event_id === selectedId)
@@ -61,12 +71,11 @@ function MonitoringApp() {
     if (useMock) return
     let active = true
     let inFlight = false
-    const liveEvents = new Map<string, CareEvent>()
     const disconnect = connectEvents({
       onAvailability: setStreamAvailable,
       onEvent: event => {
         void alerts.notify(event)
-        liveEvents.set(event.event_id, event)
+        liveEvents.current.set(event.event_id, event)
         setAppEvents(current => [event, ...current.filter(item => item.event_id !== event.event_id)])
       },
     })
@@ -77,7 +86,7 @@ function MonitoringApp() {
         const [nextEvents, nextStatus] = await Promise.all([getEvents(), getStatus()])
         if (active) {
           alerts.remember(nextEvents)
-          setAppEvents([...new Map([...nextEvents, ...liveEvents.values()].map(event => [event.event_id, event])).values()])
+          setAppEvents([...new Map([...nextEvents, ...liveEvents.current.values()].map(event => [event.event_id, event])).values()])
           setStatus(nextStatus)
           setApiError('')
           setNow(Date.now())
@@ -110,6 +119,7 @@ function MonitoringApp() {
     setAckPending(true)
     try {
       const updated = await acknowledgeEvent(id)
+      liveEvents.current.set(id, updated)
       setAppEvents(current => current.map(event => event.event_id === id ? updated : event))
     } catch {
       setStatus(null)
@@ -124,9 +134,19 @@ function MonitoringApp() {
     ? sortedEvents.filter(event => (!typeFilter || event.type === typeFilter)
       && (statusFilter === 'all' || Boolean(event.acknowledged_by) === (statusFilter === 'processed')))
     : sortedEvents.slice(0, 5)
+  const available = online && Boolean(status?.connected) && streamAvailable && !apiError
+    && Boolean(status && isHeartbeatFresh(status, now))
+  // No verified AI danger feed exists yet. Do not infer critical from confidence/type.
+  const ringStatus = overviewStatus(appEvents, available, dangerousEventIds)
+  const hasCritical = appEvents.some(event => !event.acknowledged_by && dangerousEventIds.has(event.event_id))
+  const primary = careSettings.recipients.find(item => item.id === careSettings.primaryRecipientId)
+  const primaryPhone = primary ? phoneNumber(primary.contact) : null
+  const showEmergency = hasCritical && Boolean(primaryPhone)
+  const members = careSettings.recipients.map(item => ({ name: item.name,
+    role: item.id === careSettings.primaryRecipientId ? 'Người nhận chính' : 'Người chăm sóc' }))
   return (
-    <main>
-      <StatusBanner connected={online && Boolean(status?.connected) && streamAvailable && !apiError} heartbeatFresh={Boolean(status && isHeartbeatFresh(status, now))} />
+    <main className={showEmergency ? 'has-emergency' : undefined}>
+      {(page !== 'overview' || selected) && <StatusBanner connected={available} heartbeatFresh={available} />}
       <header>
         <p className="brand">FamilyCare</p>
         <h1>{selected ? 'Chi tiết sự kiện' : pages.find(item => item.id === page)?.label}</h1>
@@ -135,6 +155,14 @@ function MonitoringApp() {
       <InstallPrimer eventViewed={Boolean(selected)} />
       {apiError && <p role="alert">{apiError}</p>}
       {loading && <p>Đang tải dữ liệu…</p>}
+      {page === 'overview' && !selected && <section className="overview-status" aria-label="Trạng thái giám sát">
+        <StatusRing status={ringStatus} lastUpdated={new Date(status?.last_heartbeat_at ?? NaN)} />
+        <DeviceStatusBar items={[
+          { icon: '▰', label: 'Pin', value: 'Chưa có dữ liệu' },
+          { icon: '◌', label: 'Tín hiệu', value: 'Chưa có dữ liệu' },
+          { icon: '◷', label: 'Heartbeat cuối', value: status ? new Date(status.last_heartbeat_at).toLocaleTimeString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' }) : 'Chưa có dữ liệu' },
+        ]} />
+      </section>}
       {selected ? (
         <section aria-labelledby="detail-title" className="event-detail">
           <button type="button" onClick={() => setSelectedId(null)}>{page === 'history' ? '← Về lịch sử' : '← Về tổng quan'}</button>
@@ -155,9 +183,21 @@ function MonitoringApp() {
           <button className="confirm-button" type="button" disabled={Boolean(selected.acknowledged_by) || ackPending} onClick={acknowledge}>Xác nhận đã xử lý</button>
           <p className="local-note">{useMock ? 'Xác nhận chỉ lưu trong phiên này, sẽ mất khi tải lại trang.' : 'Xác nhận được gửi tới hệ thống. Chỉ cập nhật khi API trả thành công.'} Trạng thái giám sát không thay đổi.</p>
         </section>
-      ) : page === 'settings' ? (
+      ) : page === 'members' ? <section className="settings-panel" aria-labelledby="members-title">
+        <h2 id="members-title">Vòng tròn chăm sóc</h2>
+        <CareCircle caregivers={members} onSelect={member => setMemberIndex(members.indexOf(member))} />
+        {members.length === 0 && <p>Chưa có người chăm sóc. Thêm người nhận trong Cài đặt.</p>}
+        {memberIndex !== null && members[memberIndex] && <section aria-label="Chi tiết người chăm sóc">
+          <h3>{members[memberIndex].name}</h3><p>{members[memberIndex].role}</p>
+          <p>{careSettings.recipients[memberIndex].contact}</p>
+          <button type="button" onClick={() => setMemberIndex(null)}>Đóng chi tiết</button>
+        </section>}
+        <div className="member-details">{members.map((member, index) => <section key={careSettings.recipients[index].id}>
+          <h3>{member.name}</h3><p>{member.role}</p><p>{careSettings.recipients[index].contact}</p>
+        </section>)}</div>
+      </section> : page === 'settings' ? (
         <>
-        <Settings events={appEvents} />
+        <Settings events={appEvents} onChange={setCareSettings} />
         <section className="event-detail" aria-labelledby="settings-title">
           <h2 id="settings-title">Thông tin ứng dụng</h2>
           <h3>Cài lên màn hình chính</h3>
@@ -196,26 +236,14 @@ function MonitoringApp() {
           </label>
         </div>}
         <p className="date-note">Giờ Việt Nam · Mới nhất trước</p>
-        {!loading && !apiError && visibleEvents.length === 0 && <p>Không có sự kiện phù hợp.</p>}
-        <ul className="events">
-          {visibleEvents.map(event => (
-            <li key={event.event_id}>
-              <button className="event-button" type="button" onClick={() => setSelectedId(event.event_id)}>
-              <span className="event-icon" aria-hidden="true">{labels[event.type].icon}</span>
-              <div className="event-content">
-                <h3>{labels[event.type].name}</h3>
-                <time dateTime={event.ts}>{new Date(event.ts).toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })} · {timeFormat.format(new Date(event.ts))}</time>
-              </div>
-              <span className={`badge ${event.acknowledged_by ? 'processed' : ''}`}>{event.acknowledged_by ? 'Đã xử lý' : 'Chưa xử lý'}</span>
-              </button>
-            </li>
-          ))}
-        </ul>
+        <EventTimeline events={visibleEvents} onSelect={setSelectedId} showEmpty={!loading && !apiError} />
       </section>}
+      {hasCritical && !primaryPhone && <p role="alert">Chọn người nhận chính có số điện thoại trong Cài đặt để gọi hỗ trợ.</p>}
+      <EmergencyActionBar show={showEmergency} recipientName={primary?.name ?? ''} phoneNumber={primaryPhone ?? ''} />
       <nav className="bottom-nav" aria-label="Điều hướng chính">
         {pages.map(item => <button key={item.id} type="button"
           aria-current={page === item.id ? 'page' : undefined}
-          onClick={() => { setPage(item.id); setSelectedId(null) }}>
+          onClick={() => { setPage(item.id); setSelectedId(null); setMemberIndex(null) }}>
           <span aria-hidden="true">{item.icon}</span>
           {item.label}
         </button>)}
@@ -224,8 +252,8 @@ function MonitoringApp() {
   )
 }
 
-function App() {
-  return window.location.pathname === '/quen-mat-khau' ? <ForgotPassword /> : <MonitoringApp />
+function App({ dangerousEventIds }: AppProps = {}) {
+  return window.location.pathname === '/quen-mat-khau' ? <ForgotPassword /> : <MonitoringApp dangerousEventIds={dangerousEventIds} />
 }
 
 export default App
