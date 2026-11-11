@@ -87,3 +87,25 @@ mới nhận qua WebSocket mới cảnh báo, không cảnh báo lại snapshot 
 mã sự kiện. Quyền từ chối/không hỗ trợ không ngăn hiển thị sự kiện. Tùy chọn bật
 chỉ giữ trong phiên. Không có Web Push: đóng app thì không nhận cảnh báo;
 hệ điều hành có thể tạm ngưng tab nền.
+
+## Quên mật khẩu
+
+Trang công khai: `/quen-mat-khau` (hosting cần trả `index.html` cho đường dẫn này).
+Không mở API/WebSocket giám sát khi ở trang này. Không lưu email, OTP, mật khẩu
+hoặc bằng chứng xác minh vào storage; tải lại sẽ bắt đầu lại luồng.
+
+Hợp đồng API dự kiến, cần backend triển khai/xác nhận:
+
+- `POST /auth/forgot-password`: `{ email }` → `{ challenge_id }`.
+  Backend phải phản hồi chung cho email tồn tại/không tồn tại để tránh dò tài khoản.
+- `POST /auth/otp/verify`: `{ challenge_id, code, purpose: "reset_password" }`
+  → `{ verification_token }` ngắn hạn, ràng buộc với challenge và mục đích.
+- `POST /auth/reset-password`: `{ challenge_id, verification_token, new_password }`
+  → `204` hoặc JSON thành công. Backend tiêu thụ bằng chứng một lần, kiểm tra chính
+  sách mật khẩu và thu hồi phiên cũ. Luồng này không gửi lại OTP sau khi đã tiêu thụ.
+- Mã lỗi: `400/401/410/422` thông tin/mã không hợp lệ; `429` giới hạn thử/khóa.
+  Thời hạn OTP 5 phút và khóa 15 phút phải được backend thực thi.
+
+Mọi endpoint dùng `VITE_API_URL`. `OtpInput` là component controlled dùng chung,
+không gắn với API hay mục đích OTP; có thể dùng lại khi triển khai xóa tài khoản
+và thêm người nhận cảnh báo. Hai thao tác này chưa được nối OTP trong thay đổi này.

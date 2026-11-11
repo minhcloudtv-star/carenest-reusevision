@@ -8,6 +8,8 @@ import type { CareEvent, EventType } from './types/event'
 import { connectEvents } from './api/socket'
 import { createAlerts } from './alerts'
 import './App.css'
+import { InstallPrimer } from './components/InstallPrimer'
+import { ForgotPassword } from './components/ForgotPassword'
 
 const labels: Record<EventType, { icon: string; name: string }> = {
   BED_EXIT: { icon: '↗', name: 'Rời giường' },
@@ -28,7 +30,7 @@ const pages: { id: Page; label: string; icon: string }[] = [
   { id: 'settings', label: 'Cài đặt', icon: '⚙' },
 ]
 
-function App() {
+function MonitoringApp() {
   const [alerts] = useState(createAlerts)
   const [soundMessage, setSoundMessage] = useState('Âm thanh chưa bật')
   const [notificationMessage, setNotificationMessage] = useState('Thông báo chưa bật')
@@ -130,6 +132,7 @@ function App() {
         <h1>{selected ? 'Chi tiết sự kiện' : pages.find(item => item.id === page)?.label}</h1>
         <p>{useMock ? 'Dữ liệu minh họa · Chưa kết nối hệ thống giám sát' : 'Dữ liệu từ hệ thống giám sát'}</p>
       </header>
+      <InstallPrimer eventViewed={Boolean(selected)} />
       {apiError && <p role="alert">{apiError}</p>}
       {loading && <p>Đang tải dữ liệu…</p>}
       {selected ? (
@@ -219,6 +222,10 @@ function App() {
       </nav>
     </main>
   )
+}
+
+function App() {
+  return window.location.pathname === '/quen-mat-khau' ? <ForgotPassword /> : <MonitoringApp />
 }
 
 export default App

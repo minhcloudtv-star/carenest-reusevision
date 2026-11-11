@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { TelegramSettings } from './TelegramSettings'
 import type { CareEvent } from '../types/event'
 
 export const SETTINGS_KEY = 'familycare.settings.v1'
@@ -45,6 +46,7 @@ export function Settings({ events }: { events: CareEvent[] }) {
 
   return <section className="settings-panel" aria-labelledby="configuration-title">
     <h2 id="configuration-title">Cấu hình FamilyCare</h2>
+    <a href="/quen-mat-khau">Quên mật khẩu</a>
     {error && <p role="alert">{error}</p>}
     <p aria-live="polite">{message}</p>
     <section aria-labelledby="recipients-title">
@@ -74,6 +76,7 @@ export function Settings({ events }: { events: CareEvent[] }) {
         <button type="submit">Thêm người nhận</button>
       </form>
     </section>
+    <TelegramSettings />
     <section aria-labelledby="cameras-title">
       <h3 id="cameras-title">Camera đã ghép đôi</h3>
       <p>Chưa xác minh trạng thái ghép đôi: hệ thống chưa cung cấp API ghép đôi camera.</p>
