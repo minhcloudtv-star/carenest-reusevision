@@ -37,6 +37,15 @@ ruff check cloud
 - Giao diện tiếng Việt, chữ lớn, tương phản cao, nút bấm đủ lớn cho người dùng lớn tuổi.
 - Không cài thêm thư viện lớn khi chưa hỏi người dùng.
 
+## Hạ tầng familycare-web
+
+- Xác thực: email + mật khẩu, OTP cho thao tác nhạy cảm. Không dùng SSO Google/Facebook.
+- Mọi quyền trình duyệt xin đúng lúc cần, có màn giải thích trước.
+- Báo lỗi gửi về endpoint nội bộ `/client-errors`, không dùng dịch vụ bên thứ ba.
+- Không log ảnh, token, địa chỉ hub, hay dữ liệu nhận dạng cá nhân vào báo lỗi.
+- Mọi API đọc từ `VITE_API_URL`, không hard-code địa chỉ.
+- Viết test cho mỗi tính năng trước khi báo xong.
+
 ## Quy trình làm việc
 
 - Làm từng bước nhỏ, giữ mỗi thay đổi tập trung vào một mục tiêu.
