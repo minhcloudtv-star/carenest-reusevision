@@ -20,4 +20,3 @@ export function loadSettings(): { data: SettingsData; error: string } {
     return { data: { recipients: [], hubUrl: '' }, error: 'Không thể đọc cài đặt đã lưu. Vui lòng kiểm tra lại cấu hình.' }
   }
 }
-
